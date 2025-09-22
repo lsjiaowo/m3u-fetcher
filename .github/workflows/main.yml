@@ -1,0 +1,52 @@
+# .github/workflows/fetch_m3u.yml
+
+name: Fetch M3U File
+
+# 控制工作流触发的条件
+on:
+  # 允许你从Actions页面手动触发这个工作流
+  workflow_dispatch:
+
+  # 设置定时任务，使用UTC时间
+  # 下面的例子是每天UTC时间0点0分执行一次（北京时间早上8点）
+  schedule:
+    - cron: '0 0 * * *'
+
+# 定义一个任务，可以包含一个或多个步骤
+jobs:
+  fetch-and-commit:
+    # 指定运行环境为最新的Ubuntu系统
+    runs-on: ubuntu-latest
+
+    # 定义任务中的步骤
+    steps:
+      # 第1步：检出（Checkout）你的仓库代码
+      # 这样工作流才能访问你的仓库文件
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 第2步：下载.m3u文件
+      # 这一步模拟了你的PowerShell命令，但使用的是Linux下更常见的curl工具
+      - name: Download the M3U file
+        run: |
+          curl -L -H "User-Agent: PotPlayer" -o "YanG.m3u" "https://tv.iill.top/m3u/Gather"
+          echo "File downloaded successfully."
+
+      # 第3步：提交文件到仓库
+      - name: Commit and push if there are changes
+        run: |
+          # 配置Git用户信息
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          
+          # 将下载的文件添加到暂存区
+          git add YanG.m3u
+          
+          # 检查是否有文件变动。如果有，则提交并推送
+          if ! git diff --staged --quiet; then
+            git commit -m "Update YanG.m3u"
+            git push
+            echo "Changes committed and pushed."
+          else
+            echo "No changes to commit."
+          fi
