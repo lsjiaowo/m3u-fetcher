@@ -15,18 +15,17 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # This step uses curl-impersonate to mimic a real browser (Chrome 110)
-      # to bypass the Cloudflare "Just a moment..." security check.
-      - name: Download the M3U file with curl-impersonate
-        uses: docker://lwthiker/curl-impersonate:latest
-        with:
-          # The entire argument string is now wrapped in single quotes (')
-          args: '--insecure -H "User-Agent: PotPlayer" -o YanG.m3u "https://tv.iill.top/m3u/Gather" chrome110'
+      - name: Download the M3U file via Docker
+        run: |
+          docker run --rm \
+            -v "${{ github.workspace }}":/workspace \
+            -w /workspace \
+            lwthiker/curl-impersonate:latest \
+            curl-impersonate.sh --insecure -H "User-Agent: PotPlayer" -o YanG.m3u "https://tv.iill.top/m3u/Gather" chrome110
 
       - name: Commit and push if there are changes
         run: |
-          # Check if the downloaded file is empty or still contains the Cloudflare page.
-          # If so, the script will exit to avoid committing a bad file.
+          # 檢查下載的檔案是否有效
           if ! [ -s YanG.m3u ] || grep -q "Just a moment" YanG.m3u; then
             echo "Failed to download the correct M3U file. It is likely a Cloudflare page."
             exit 1
