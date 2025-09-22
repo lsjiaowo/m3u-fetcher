@@ -20,7 +20,8 @@ jobs:
       - name: Download the M3U file with curl-impersonate
         uses: docker://lwthiker/curl-impersonate:latest
         with:
-          args: --insecure -H "User-Agent: PotPlayer" -o YanG.m3u "https://tv.iill.top/m3u/Gather" chrome110
+          # The entire argument string is now wrapped in single quotes (')
+          args: '--insecure -H "User-Agent: PotPlayer" -o YanG.m3u "https://tv.iill.top/m3u/Gather" chrome110'
 
       - name: Commit and push if there are changes
         run: |
