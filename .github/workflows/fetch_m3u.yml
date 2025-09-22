@@ -22,7 +22,7 @@ jobs:
             -v "${{ github.workspace }}":/workspace \
             -w /workspace \
             lwthiker/curl-impersonate:latest \
-            curl-impersonate --insecure -H "User-Agent: PotPlayer" -o YanG.m3u "https://tv.iill.top/m3u/Gather" chrome110
+            curl-impersonate chrome110 --insecure -H "User-Agent: PotPlayer" -o YanG.m3u "https://tv.iill.top/m3u/Gather"
 
       - name: Commit and push if there are changes
         run: |
