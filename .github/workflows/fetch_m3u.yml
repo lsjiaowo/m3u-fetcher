@@ -10,8 +10,6 @@ on:
 jobs:
   fetch-and-commit:
     runs-on: ubuntu-latest
-
-    # 新增：授予工作流写入仓库内容的权限
     permissions:
       contents: write
 
@@ -19,13 +17,26 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Download the M3U file
-        run: |
-          curl -L -H "User-Agent: PotPlayer" -o "YanG.m3u" "https://tv.iill.top/m3u/Gather"
-          echo "File downloaded successfully."
+      # 使用能够模拟真实浏览器的 curl-impersonate 来下载文件
+      - name: Download the M3U file with curl-impersonate
+        uses: docker://lwthiker/curl-impersonate:latest
+        with:
+          # 参数解释：
+          # --insecure: 忽略SSL证书错误，增加兼容性
+          # -H "User-Agent: ...": 依然指定User-Agent
+          # -o YanG.m3u: 输出文件名
+          # "URL": 目标地址
+          # chrome110: 关键！告诉工具要完整模拟 Chrome 110 浏览器的网络指纹
+          args: --insecure -H "User-Agent: PotPlayer" -o YanG.m3u "https://tv.iill.top/m3u/Gather" chrome110
 
       - name: Commit and push if there are changes
         run: |
+          # 检查文件是否为空或者包含"Just a moment"，如果是则下载失败，退出执行
+          if ! [ -s YanG.m3u ] || grep -q "Just a moment" YanG.m3u; then
+            echo "Failed to download the correct M3U file. It might be a Cloudflare page."
+            exit 1
+          fi
+          
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           git add YanG.m3u
