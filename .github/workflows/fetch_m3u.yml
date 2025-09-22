@@ -21,6 +21,10 @@ jobs:
         with:
           node-version: '18'
 
+      # 新增步驟：安裝 Playwright NPM 函式庫
+      - name: Install Node.js dependencies
+        run: npm install playwright
+
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
 
