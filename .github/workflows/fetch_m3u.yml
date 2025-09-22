@@ -16,19 +16,23 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Download the M3U file via Docker
-        run: |
-          docker run --rm \
-            -v "${{ github.workspace }}":/workspace \
-            -w /workspace \
-            lwthiker/curl-impersonate:latest \
-            curl-impersonate chrome110 --insecure -o YanG.m3u "https://tv.iill.top/m3u/Gather"
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
+
+      - name: Run Playwright script to download file
+        run: node download.js
 
       - name: Commit and push if there are changes
         run: |
-          # 檢查下載的檔案是否有效
-          if ! [ -s YanG.m3u ] || grep -q "Just a moment" YanG.m3u; then
-            echo "Failed to download the correct M3U file. It is likely a Cloudflare page."
+          # 由於下載成功與否的檢查已經在 download.js 中完成，
+          # 這裡我們只需要檢查檔案是否存在即可。
+          if ! [ -f YanG.m3u ]; then
+            echo "YanG.m3u file not created. Exiting."
             exit 1
           fi
           
