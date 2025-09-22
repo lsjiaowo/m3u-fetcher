@@ -3,6 +3,7 @@ name: Fetch M3U File
 on:
   workflow_dispatch:
   schedule:
+    # 這裡的時間是 UTC+0，可自行調整
     - cron: '0 0 * * *'
 
 jobs:
@@ -21,7 +22,7 @@ jobs:
             -v "${{ github.workspace }}":/workspace \
             -w /workspace \
             lwthiker/curl-impersonate:latest \
-            curl-impersonate.sh --insecure -H "User-Agent: PotPlayer" -o YanG.m3u "https://tv.iill.top/m3u/Gather" chrome110
+            curl-impersonate --insecure -H "User-Agent: PotPlayer" -o YanG.m3u "https://tv.iill.top/m3u/Gather" chrome110
 
       - name: Commit and push if there are changes
         run: |
